@@ -60,42 +60,54 @@ func Diff(oldSpec, newSpec *Spec, baseBranch, featureBranch, openAPIPath string)
 		RemovedEndpoints: make(map[string][]Endpoint),
 	}
 
-	// Diff endpoints
+	diffEndpoints(oldSpec, newSpec, result)
+	diffSchemas(oldSpec, newSpec, result)
+
+	result.HasChanges = len(result.AddedEndpoints) > 0 ||
+		len(result.RemovedEndpoints) > 0 ||
+		len(result.SchemaChanges) > 0
+
+	return result
+}
+
+func diffEndpoints(oldSpec, newSpec *Spec, result *ChangelogResult) {
 	oldEps := extractEndpoints(oldSpec)
 	newEps := extractEndpoints(newSpec)
 
 	for key, tags := range newEps {
 		if _, exists := oldEps[key]; !exists {
-			ep := Endpoint{Path: key[0], Method: key[1], Tags: tags}
-			for _, tag := range tags {
-				result.AddedEndpoints[tag] = append(result.AddedEndpoints[tag], ep)
-			}
+			addEndpointByTags(result.AddedEndpoints, key, tags)
 		}
 	}
 	for key, tags := range oldEps {
 		if _, exists := newEps[key]; !exists {
-			ep := Endpoint{Path: key[0], Method: key[1], Tags: tags}
-			for _, tag := range tags {
-				result.RemovedEndpoints[tag] = append(result.RemovedEndpoints[tag], ep)
+			addEndpointByTags(result.RemovedEndpoints, key, tags)
+		}
+	}
+
+	sortEndpointMap(result.AddedEndpoints)
+	sortEndpointMap(result.RemovedEndpoints)
+}
+
+func addEndpointByTags(m map[string][]Endpoint, key [2]string, tags []string) {
+	ep := Endpoint{Path: key[0], Method: key[1], Tags: tags}
+	for _, tag := range tags {
+		m[tag] = append(m[tag], ep)
+	}
+}
+
+func sortEndpointMap(m map[string][]Endpoint) {
+	for _, eps := range m {
+		sort.Slice(eps, func(i, j int) bool {
+			if eps[i].Path != eps[j].Path {
+				return eps[i].Path < eps[j].Path
 			}
-		}
+			return eps[i].Method < eps[j].Method
+		})
 	}
+}
 
-	// Sort endpoints within each tag
-	sortEps := func(m map[string][]Endpoint) {
-		for _, eps := range m {
-			sort.Slice(eps, func(i, j int) bool {
-				if eps[i].Path != eps[j].Path {
-					return eps[i].Path < eps[j].Path
-				}
-				return eps[i].Method < eps[j].Method
-			})
-		}
-	}
-	sortEps(result.AddedEndpoints)
-	sortEps(result.RemovedEndpoints)
-
-	// Diff schemas
+func diffSchemas(oldSpec, newSpec *Spec, result *ChangelogResult) {
 	oldSchemas := oldSpec.Components.Schemas
 	newSchemas := newSpec.Components.Schemas
 
@@ -109,48 +121,8 @@ func Diff(oldSpec, newSpec *Spec, baseBranch, featureBranch, openAPIPath string)
 			})
 			continue
 		}
-
-		oldFields := make(map[string]string)
-		for _, f := range getComponentFields(oldSchema) {
-			oldFields[f.Name] = f.Type
-		}
-		newFields := make(map[string]string)
-		for _, f := range getComponentFields(newSchema) {
-			newFields[f.Name] = f.Type
-		}
-
-		var added, removed []SchemaField
-		var changed []FieldTypeChange
-
-		for name, typ := range newFields {
-			if _, ok := oldFields[name]; !ok {
-				added = append(added, SchemaField{Name: name, Type: typ})
-			}
-		}
-		for name, typ := range oldFields {
-			if _, ok := newFields[name]; !ok {
-				removed = append(removed, SchemaField{Name: name, Type: typ})
-			}
-		}
-		for name, newType := range newFields {
-			if oldType, ok := oldFields[name]; ok && oldType != newType {
-				changed = append(changed, FieldTypeChange{Name: name, OldType: oldType, NewType: newType})
-			}
-		}
-
-		sort.Slice(added, func(i, j int) bool { return added[i].Name < added[j].Name })
-		sort.Slice(removed, func(i, j int) bool { return removed[i].Name < removed[j].Name })
-		sort.Slice(changed, func(i, j int) bool { return changed[i].Name < changed[j].Name })
-
-		if len(added) > 0 || len(removed) > 0 || len(changed) > 0 {
-			result.SchemaChanges = append(result.SchemaChanges, SchemaDiff{
-				Name:              name,
-				Status:            "modified",
-				Fields:            getComponentFields(newSchema),
-				AddedFields:       added,
-				RemovedFields:     removed,
-				ChangedTypeFields: changed,
-			})
+		if diff := diffOneSchema(name, oldSchema, newSchema); diff != nil {
+			result.SchemaChanges = append(result.SchemaChanges, *diff)
 		}
 	}
 
@@ -167,10 +139,56 @@ func Diff(oldSpec, newSpec *Spec, baseBranch, featureBranch, openAPIPath string)
 	sort.Slice(result.SchemaChanges, func(i, j int) bool {
 		return result.SchemaChanges[i].Name < result.SchemaChanges[j].Name
 	})
+}
 
-	result.HasChanges = len(result.AddedEndpoints) > 0 ||
-		len(result.RemovedEndpoints) > 0 ||
-		len(result.SchemaChanges) > 0
+func diffOneSchema(name string, oldSchema, newSchema Schema) *SchemaDiff {
+	oldFields := fieldsToMap(getComponentFields(oldSchema))
+	newFields := fieldsToMap(getComponentFields(newSchema))
 
+	added := findAddedFields(newFields, oldFields)
+	removed := findAddedFields(oldFields, newFields) // reversed args = removed
+	changed := findChangedFields(oldFields, newFields)
+
+	if len(added) == 0 && len(removed) == 0 && len(changed) == 0 {
+		return nil
+	}
+
+	return &SchemaDiff{
+		Name:              name,
+		Status:            "modified",
+		Fields:            getComponentFields(newSchema),
+		AddedFields:       added,
+		RemovedFields:     removed,
+		ChangedTypeFields: changed,
+	}
+}
+
+func fieldsToMap(fields []SchemaField) map[string]string {
+	m := make(map[string]string)
+	for _, f := range fields {
+		m[f.Name] = f.Type
+	}
+	return m
+}
+
+func findAddedFields(source, baseline map[string]string) []SchemaField {
+	var result []SchemaField
+	for name, typ := range source {
+		if _, ok := baseline[name]; !ok {
+			result = append(result, SchemaField{Name: name, Type: typ})
+		}
+	}
+	sort.Slice(result, func(i, j int) bool { return result[i].Name < result[j].Name })
+	return result
+}
+
+func findChangedFields(oldFields, newFields map[string]string) []FieldTypeChange {
+	var result []FieldTypeChange
+	for name, newType := range newFields {
+		if oldType, ok := oldFields[name]; ok && oldType != newType {
+			result = append(result, FieldTypeChange{Name: name, OldType: oldType, NewType: newType})
+		}
+	}
+	sort.Slice(result, func(i, j int) bool { return result[i].Name < result[j].Name })
 	return result
 }

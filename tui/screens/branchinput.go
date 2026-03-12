@@ -59,43 +59,8 @@ func (m BranchInputModel) Update(msg tea.Msg) (BranchInputModel, tea.Cmd) {
 		m.height = msg.Height
 
 	case tea.KeyPressMsg:
-		switch msg.String() {
-		case "esc":
-			return m, func() tea.Msg { return BackToMenuMsg{} }
-
-		case "tab", "down":
-			if m.focusBase {
-				m.focusBase = false
-				m.baseInput.Blur()
-				m.featureInput.Focus()
-				return m, textinput.Blink
-			}
-
-		case "shift+tab", "up":
-			if !m.focusBase {
-				m.focusBase = true
-				m.featureInput.Blur()
-				m.baseInput.Focus()
-				return m, textinput.Blink
-			}
-
-		case "enter":
-			if !m.focusBase && m.featureInput.Value() != "" {
-				repoPath := m.repoPath
-				return m, func() tea.Msg {
-					return StartChangelogMsg{
-						BaseBranch:    m.baseInput.Value(),
-						FeatureBranch: m.featureInput.Value(),
-						RepoPath:      repoPath,
-					}
-				}
-			}
-			if m.focusBase {
-				m.focusBase = false
-				m.baseInput.Blur()
-				m.featureInput.Focus()
-				return m, textinput.Blink
-			}
+		if updated, cmd, handled := m.handleKeyPress(msg); handled {
+			return updated, cmd
 		}
 	}
 
@@ -106,6 +71,58 @@ func (m BranchInputModel) Update(msg tea.Msg) (BranchInputModel, tea.Cmd) {
 		m.featureInput, cmd = m.featureInput.Update(msg)
 	}
 	return m, cmd
+}
+
+func (m BranchInputModel) handleKeyPress(msg tea.KeyPressMsg) (BranchInputModel, tea.Cmd, bool) {
+	switch msg.String() {
+	case "esc":
+		return m, func() tea.Msg { return BackToMenuMsg{} }, true
+
+	case "tab", "down":
+		if m.focusBase {
+			return m.focusFeature(), textinput.Blink, true
+		}
+
+	case "shift+tab", "up":
+		if !m.focusBase {
+			return m.focusBaseField(), textinput.Blink, true
+		}
+
+	case "enter":
+		return m.handleEnter()
+	}
+	return m, nil, false
+}
+
+func (m BranchInputModel) focusFeature() BranchInputModel {
+	m.focusBase = false
+	m.baseInput.Blur()
+	m.featureInput.Focus()
+	return m
+}
+
+func (m BranchInputModel) focusBaseField() BranchInputModel {
+	m.focusBase = true
+	m.featureInput.Blur()
+	m.baseInput.Focus()
+	return m
+}
+
+func (m BranchInputModel) handleEnter() (BranchInputModel, tea.Cmd, bool) {
+	if !m.focusBase && m.featureInput.Value() != "" {
+		repoPath := m.repoPath
+		return m, func() tea.Msg {
+			return StartChangelogMsg{
+				BaseBranch:    m.baseInput.Value(),
+				FeatureBranch: m.featureInput.Value(),
+				RepoPath:      repoPath,
+			}
+		}, true
+	}
+	if m.focusBase {
+		return m.focusFeature(), textinput.Blink, true
+	}
+	return m, nil, false
 }
 
 func (m BranchInputModel) View() string {
