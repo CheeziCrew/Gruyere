@@ -2,6 +2,15 @@
 
 Age your APIs gracefully. Interactive TUI for generating API changelogs.
 
+## Status
+
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=CheeziCrew_Gruyere&metric=alert_status)](https://sonarcloud.io/summary/overall?id=CheeziCrew_Gruyere)
+[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=CheeziCrew_Gruyere&metric=reliability_rating)](https://sonarcloud.io/summary/overall?id=CheeziCrew_Gruyere)
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=CheeziCrew_Gruyere&metric=security_rating)](https://sonarcloud.io/summary/overall?id=CheeziCrew_Gruyere)
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=CheeziCrew_Gruyere&metric=sqale_rating)](https://sonarcloud.io/summary/overall?id=CheeziCrew_Gruyere)
+[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=CheeziCrew_Gruyere&metric=vulnerabilities)](https://sonarcloud.io/summary/overall?id=CheeziCrew_Gruyere)
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=CheeziCrew_Gruyere&metric=bugs)](https://sonarcloud.io/summary/overall?id=CheeziCrew_Gruyere)
+
 ## Install
 
 ```sh
