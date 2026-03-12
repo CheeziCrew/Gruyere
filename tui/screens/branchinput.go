@@ -13,17 +13,13 @@ type BranchInputModel struct {
 	baseInput    textinput.Model
 	featureInput textinput.Model
 	focusBase    bool // true = base field focused, false = feature
+	repoPath     string
+	repoName     string
 	width        int
 	height       int
 }
 
-// StartChangelogMsg is sent when the user confirms both branches.
-type StartChangelogMsg struct {
-	BaseBranch    string
-	FeatureBranch string
-}
-
-func NewBranchInput() BranchInputModel {
+func NewBranchInput(repoPath, repoName string) BranchInputModel {
 	base := newStyledInput("base branch (e.g. main)")
 	base.Focus()
 	base.CharLimit = 100
@@ -36,6 +32,8 @@ func NewBranchInput() BranchInputModel {
 		baseInput:    base,
 		featureInput: feature,
 		focusBase:    true,
+		repoPath:     repoPath,
+		repoName:     repoName,
 	}
 }
 
@@ -83,10 +81,12 @@ func (m BranchInputModel) Update(msg tea.Msg) (BranchInputModel, tea.Cmd) {
 
 		case "enter":
 			if !m.focusBase && m.featureInput.Value() != "" {
+				repoPath := m.repoPath
 				return m, func() tea.Msg {
 					return StartChangelogMsg{
 						BaseBranch:    m.baseInput.Value(),
 						FeatureBranch: m.featureInput.Value(),
+						RepoPath:      repoPath,
 					}
 				}
 			}
@@ -110,7 +110,7 @@ func (m BranchInputModel) Update(msg tea.Msg) (BranchInputModel, tea.Cmd) {
 
 func (m BranchInputModel) View() string {
 	title := accentStyle.Render("Generate Changelog")
-	desc := dimStyle.Render("Enter the branches to diff")
+	desc := dimStyle.Render("Enter the branches to diff for ") + accentStyle.Render(m.repoName)
 
 	baseLabel := dimStyle.Render("Base branch:")
 	featureLabel := dimStyle.Render("Feature branch:")

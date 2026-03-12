@@ -1,6 +1,8 @@
 package tui
 
 import (
+	"path/filepath"
+
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 	"github.com/CheeziCrew/curd"
@@ -12,6 +14,7 @@ type screen int
 
 const (
 	screenMenu screen = iota
+	screenRepoSelect
 	screenBranchInput
 	screenProgress
 	screenResults
@@ -19,13 +22,15 @@ const (
 
 // Model is the root Bubble Tea model.
 type Model struct {
-	current      screen
-	menu         screens.MenuModel
-	branchInput  screens.BranchInputModel
-	progress     screens.ProgressModel
-	results      screens.ResultsModel
-	width        int
-	height       int
+	current    screen
+	menu       screens.MenuModel
+	repoSelect screens.RepoSelectModel
+	branchInput screens.BranchInputModel
+	progress   screens.ProgressModel
+	results    screens.ResultsModel
+	scanPath   string
+	width      int
+	height     int
 }
 
 // New creates a fresh root model.
@@ -48,13 +53,14 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.width = msg.Width
 		m.height = msg.Height
 		m.menu, _ = m.menu.Update(msg)
-		if m.current == screenBranchInput {
+		switch m.current {
+		case screenRepoSelect:
+			m.repoSelect, _ = m.repoSelect.Update(msg)
+		case screenBranchInput:
 			m.branchInput, _ = m.branchInput.Update(msg)
-		}
-		if m.current == screenProgress {
+		case screenProgress:
 			m.progress, _ = m.progress.Update(msg)
-		}
-		if m.current == screenResults {
+		case screenResults:
 			m.results, _ = m.results.Update(msg)
 		}
 		return m, nil
@@ -69,8 +75,17 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case curd.MenuSelectionMsg:
 		if msg.Command == "changelog" {
+			m.current = screenRepoSelect
+			m.repoSelect = screens.NewRepoSelect("changelog", ".", 0, m.height)
+			return m, m.repoSelect.Init()
+		}
+
+	case screens.RepoSelectDoneMsg:
+		if len(msg.Paths) > 0 {
+			repoPath := msg.Paths[0]
+			repoName := filepath.Base(repoPath)
 			m.current = screenBranchInput
-			m.branchInput = screens.NewBranchInput()
+			m.branchInput = screens.NewBranchInput(repoPath, repoName)
 			return m, m.branchInput.Init()
 		}
 
@@ -79,7 +94,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.progress = screens.NewProgress(msg.BaseBranch, msg.FeatureBranch)
 		return m, tea.Batch(
 			m.progress.Init(),
-			generateChangelog(msg.BaseBranch, msg.FeatureBranch),
+			generateChangelog(msg.BaseBranch, msg.FeatureBranch, msg.RepoPath),
 		)
 
 	case screens.ChangelogDoneMsg:
@@ -99,6 +114,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch m.current {
 	case screenMenu:
 		m.menu, cmd = m.menu.Update(msg)
+	case screenRepoSelect:
+		m.repoSelect, cmd = m.repoSelect.Update(msg)
 	case screenBranchInput:
 		m.branchInput, cmd = m.branchInput.Update(msg)
 	case screenProgress:
@@ -114,6 +131,8 @@ func (m Model) View() tea.View {
 	switch m.current {
 	case screenMenu:
 		content = m.menu.View()
+	case screenRepoSelect:
+		content = m.repoSelect.View()
 	case screenBranchInput:
 		content = m.branchInput.View()
 	case screenProgress:
@@ -127,11 +146,12 @@ func (m Model) View() tea.View {
 	return v
 }
 
-func generateChangelog(base, feature string) tea.Cmd {
+func generateChangelog(base, feature, repoPath string) tea.Cmd {
 	return func() tea.Msg {
 		result, err := ops.GenerateChangelog(ops.Input{
 			BaseBranch:    base,
 			FeatureBranch: feature,
+			RepoPath:      repoPath,
 		})
 		if err != nil {
 			return screens.ChangelogDoneMsg{Err: err}
