@@ -1,5 +1,8 @@
 # Gruyere
 
+![cheezi_gruyere](https://github.com/user-attachments/assets/5645a782-cf6f-493e-9395-39769c0e5f95)
+
+
 Age your APIs gracefully. Interactive TUI for generating API changelogs.
 
 ## Status
