@@ -5,7 +5,7 @@ import (
 
 	"charm.land/bubbles/v2/textinput"
 	tea "charm.land/bubbletea/v2"
-	"charm.land/lipgloss/v2"
+	"github.com/CheeziCrew/curd"
 )
 
 // BranchInputModel handles the two-field branch input.
@@ -38,14 +38,7 @@ func NewBranchInput(repoPath, repoName string) BranchInputModel {
 }
 
 func newStyledInput(placeholder string) textinput.Model {
-	ti := textinput.New()
-	ti.Placeholder = placeholder
-	ti.SetWidth(60)
-	s := textinput.DefaultStyles(true)
-	s.Focused.Prompt = lipgloss.NewStyle().Foreground(colorBrCyan)
-	s.Focused.Text = lipgloss.NewStyle().Foreground(colorFg)
-	ti.SetStyles(s)
-	return ti
+	return curd.NewStyledInput(placeholder, palette)
 }
 
 func (m BranchInputModel) Init() tea.Cmd {
