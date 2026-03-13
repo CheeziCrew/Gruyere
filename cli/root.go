@@ -16,6 +16,11 @@ var (
 	dim  = lipgloss.NewStyle().Foreground(lipgloss.Color("8"))
 )
 
+// generateChangelogFn is the function used to generate changelogs. Replaceable in tests.
+var generateChangelogFn = func(input ops.Input) (ops.Output, error) {
+	return ops.GenerateChangelog(input)
+}
+
 // BuildCLI creates the Cobra command for gruyere.
 func BuildCLI() *cobra.Command {
 	var outputFile string
@@ -39,7 +44,7 @@ func BuildCLI() *cobra.Command {
 }
 
 func runChangelog(baseBranch, featureBranch, outputFile string, prepend bool) error {
-	result, err := ops.GenerateChangelog(ops.Input{
+	result, err := generateChangelogFn(ops.Input{
 		BaseBranch:    baseBranch,
 		FeatureBranch: featureBranch,
 	})
