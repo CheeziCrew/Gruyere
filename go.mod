@@ -3,10 +3,10 @@ module github.com/CheeziCrew/gruyere
 go 1.26.1
 
 require (
-	charm.land/bubbles/v2 v2.0.0
+	charm.land/bubbles/v2 v2.1.0
 	charm.land/bubbletea/v2 v2.0.2
 	charm.land/lipgloss/v2 v2.0.2
-	github.com/CheeziCrew/curd v0.2.8
+	github.com/CheeziCrew/curd v0.2.9
 	github.com/spf13/cobra v1.10.2
 	gopkg.in/yaml.v3 v3.0.1
 )
