@@ -5,7 +5,7 @@ go 1.26.1
 require (
 	charm.land/bubbles/v2 v2.1.0
 	charm.land/bubbletea/v2 v2.0.8
-	charm.land/lipgloss/v2 v2.0.4
+	charm.land/lipgloss/v2 v2.0.5
 	github.com/CheeziCrew/curd v0.2.13
 	github.com/spf13/cobra v1.10.2
 	gopkg.in/yaml.v3 v3.0.1
