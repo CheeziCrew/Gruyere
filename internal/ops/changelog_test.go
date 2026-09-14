@@ -90,12 +90,12 @@ components:
 
 func TestGenerateChangelog(t *testing.T) {
 	tests := []struct {
-		name       string
-		setup      func(t *testing.T, dir string) // set up git repo
-		input      func(dir string) Input
-		wantErr    bool
-		errSubstr  string
-		checkOut   func(t *testing.T, out Output)
+		name      string
+		setup     func(t *testing.T, dir string) // set up git repo
+		input     func(dir string) Input
+		wantErr   bool
+		errSubstr string
+		checkOut  func(t *testing.T, out Output)
 	}{
 		{
 			name: "success with changes",
@@ -179,12 +179,12 @@ func TestGenerateChangelog(t *testing.T) {
 
 	// Additional error path tests
 	tests = append(tests, struct {
-		name       string
-		setup      func(t *testing.T, dir string)
-		input      func(dir string) Input
-		wantErr    bool
-		errSubstr  string
-		checkOut   func(t *testing.T, out Output)
+		name      string
+		setup     func(t *testing.T, dir string)
+		input     func(dir string) Input
+		wantErr   bool
+		errSubstr string
+		checkOut  func(t *testing.T, out Output)
 	}{
 		name: "invalid YAML in base branch",
 		setup: func(t *testing.T, dir string) {
@@ -208,12 +208,12 @@ func TestGenerateChangelog(t *testing.T) {
 	})
 
 	tests = append(tests, struct {
-		name       string
-		setup      func(t *testing.T, dir string)
-		input      func(dir string) Input
-		wantErr    bool
-		errSubstr  string
-		checkOut   func(t *testing.T, out Output)
+		name      string
+		setup     func(t *testing.T, dir string)
+		input     func(dir string) Input
+		wantErr   bool
+		errSubstr string
+		checkOut  func(t *testing.T, out Output)
 	}{
 		name: "no changes between identical branches",
 		setup: func(t *testing.T, dir string) {
@@ -240,12 +240,12 @@ func TestGenerateChangelog(t *testing.T) {
 	})
 
 	tests = append(tests, struct {
-		name       string
-		setup      func(t *testing.T, dir string)
-		input      func(dir string) Input
-		wantErr    bool
-		errSubstr  string
-		checkOut   func(t *testing.T, out Output)
+		name      string
+		setup     func(t *testing.T, dir string)
+		input     func(dir string) Input
+		wantErr   bool
+		errSubstr string
+		checkOut  func(t *testing.T, out Output)
 	}{
 		name: "bad base branch name",
 		setup: func(t *testing.T, dir string) {
@@ -268,12 +268,12 @@ func TestGenerateChangelog(t *testing.T) {
 	})
 
 	tests = append(tests, struct {
-		name       string
-		setup      func(t *testing.T, dir string)
-		input      func(dir string) Input
-		wantErr    bool
-		errSubstr  string
-		checkOut   func(t *testing.T, out Output)
+		name      string
+		setup     func(t *testing.T, dir string)
+		input     func(dir string) Input
+		wantErr   bool
+		errSubstr string
+		checkOut  func(t *testing.T, out Output)
 	}{
 		name: "bad feature branch name",
 		setup: func(t *testing.T, dir string) {
@@ -296,12 +296,12 @@ func TestGenerateChangelog(t *testing.T) {
 	})
 
 	tests = append(tests, struct {
-		name       string
-		setup      func(t *testing.T, dir string)
-		input      func(dir string) Input
-		wantErr    bool
-		errSubstr  string
-		checkOut   func(t *testing.T, out Output)
+		name      string
+		setup     func(t *testing.T, dir string)
+		input     func(dir string) Input
+		wantErr   bool
+		errSubstr string
+		checkOut  func(t *testing.T, out Output)
 	}{
 		name: "invalid YAML in feature branch only",
 		setup: func(t *testing.T, dir string) {
@@ -328,12 +328,12 @@ func TestGenerateChangelog(t *testing.T) {
 	})
 
 	tests = append(tests, struct {
-		name       string
-		setup      func(t *testing.T, dir string)
-		input      func(dir string) Input
-		wantErr    bool
-		errSubstr  string
-		checkOut   func(t *testing.T, out Output)
+		name      string
+		setup     func(t *testing.T, dir string)
+		input     func(dir string) Input
+		wantErr   bool
+		errSubstr string
+		checkOut  func(t *testing.T, out Output)
 	}{
 		name: "scan error for nonexistent repo path",
 		setup: func(t *testing.T, dir string) {

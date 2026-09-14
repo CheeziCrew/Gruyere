@@ -13,14 +13,14 @@ var (
 
 // Re-export colors that screen files reference directly.
 var (
-	colorFg      = curd.ColorFg
-	colorGray    = curd.ColorGray
-	colorGreen   = curd.ColorGreen
-	colorRed     = curd.ColorRed
-	colorCyan    = curd.ColorCyan
-	colorBrCyan  = curd.ColorBrCyan
-	colorBlue    = curd.ColorBlue
-	colorBrBlue  = curd.ColorBrBlue
+	colorFg     = curd.ColorFg
+	colorGray   = curd.ColorGray
+	colorGreen  = curd.ColorGreen
+	colorRed    = curd.ColorRed
+	colorCyan   = curd.ColorCyan
+	colorBrCyan = curd.ColorBrCyan
+	colorBlue   = curd.ColorBlue
+	colorBrBlue = curd.ColorBrBlue
 )
 
 // Re-export common styles.

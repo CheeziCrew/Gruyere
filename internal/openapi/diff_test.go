@@ -33,8 +33,8 @@ func TestGetComponentFields(t *testing.T) {
 		{
 			name: "multiple properties sorted by name",
 			schema: Schema{Properties: map[string]Property{
-				"zebra": {Type: "string"},
-				"alpha": {Type: "integer"},
+				"zebra":  {Type: "string"},
+				"alpha":  {Type: "integer"},
 				"middle": {Ref: "#/ref"},
 			}},
 			want: []SchemaField{
@@ -277,9 +277,9 @@ func TestDiffOneSchema(t *testing.T) {
 		wantChgd  int
 	}{
 		{
-			name: "identical schemas returns nil",
-			old:  Schema{Properties: map[string]Property{"id": {Type: "integer"}}},
-			new:  Schema{Properties: map[string]Property{"id": {Type: "integer"}}},
+			name:    "identical schemas returns nil",
+			old:     Schema{Properties: map[string]Property{"id": {Type: "integer"}}},
+			new:     Schema{Properties: map[string]Property{"id": {Type: "integer"}}},
 			wantNil: true,
 		},
 		{

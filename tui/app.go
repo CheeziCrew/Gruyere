@@ -22,15 +22,15 @@ const (
 
 // Model is the root Bubble Tea model.
 type Model struct {
-	current    screen
-	menu       screens.MenuModel
-	repoSelect screens.RepoSelectModel
+	current     screen
+	menu        screens.MenuModel
+	repoSelect  screens.RepoSelectModel
 	branchInput screens.BranchInputModel
-	progress   screens.ProgressModel
-	results    screens.ResultsModel
-	scanPath   string
-	width      int
-	height     int
+	progress    screens.ProgressModel
+	results     screens.ResultsModel
+	scanPath    string
+	width       int
+	height      int
 }
 
 // New creates a fresh root model.
